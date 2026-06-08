@@ -24,37 +24,24 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      # ✅ SAFE SSH SETUP (fixed)
+      # 🔐 Setup SSH safely
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # ❗ Fail fast if secrets are missing
-          if [ -z "${{ secrets.VM_IP }}" ]; then
-            echo "❌ VM_IP secret is missing"
-            exit 1
-          fi
-
-          if [ -z "${{ secrets.VM_USER }}" ]; then
-            echo "❌ VM_USER secret is missing"
-            exit 1
-          fi
 
           ssh-keyscan -H "${{ secrets.VM_IP }}" >> ~/.ssh/known_hosts
 
-      # ✅ Deploy (cleaned)
-      - name: Deploy to GCP VM
+      # 🚀 Deploy directly to nginx folder (clean approach)
+      - name: Deploy to VM
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa" build/ \
-          ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:/var/www/react-app/
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+          build/ ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:/var/www/html/
 
-      # ✅ Single clean restart (no duplicate copy)
-      - name: Restart Nginx on VM
+      # 🔄 Restart nginx only
+      - name: Restart Nginx
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
-            sudo rm -rf /var/www/html/*
-            sudo cp -r /var/www/react-app/* /var/www/html/
             sudo systemctl restart nginx
           EOF
