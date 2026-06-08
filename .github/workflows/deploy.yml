@@ -41,7 +41,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
             set -e
 
-            cd /var/www/html || exit 1
+            cd /react-todo || exit 1
 
             # if repo not cloned, clone it
             git pull origin main || git pull origin main
