@@ -19,11 +19,11 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: npm install
+      # - name: Install dependencies
+      #   run: npm install
 
-      - name: Build React app
-        run: npm run build
+      # - name: Build React app
+      #   run: npm run build
 
       # 🔐 Setup SSH
       - name: Setup SSH
@@ -48,6 +48,4 @@ jobs:
 
             npm install
             npm run build
-
-            sudo systemctl restart nginx
           EOF
