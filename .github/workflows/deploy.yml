@@ -44,11 +44,7 @@ jobs:
             cd /var/www/html || exit 1
 
             # if repo not cloned, clone it
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git .
-            else
-              git pull origin main || git pull origin master
-            fi
+            git pull origin main || git pull origin master
 
             npm install
             npm run build
