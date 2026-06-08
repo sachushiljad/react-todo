@@ -25,21 +25,25 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      # 🔐 Setup SSH safely
-      - name: Setup SSH key
+      # 🔐 Setup SSH key (FIXED)
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
+
           printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      # 🚀 Deploy directly to nginx folder (clean approach)
+          ssh-keyscan -H "${{ secrets.VM_IP }}" >> ~/.ssh/known_hosts
+
+      # 🚀 Deploy using rsync
       - name: Deploy to VM
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-          build/ ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:/var/www/html/
+          rsync -avz \
+            -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            build/ \
+            ${{ secrets.VM_USER }}@${{ secrets.VM_IP }}:/var/www/html/
 
-      # 🔄 Restart nginx only
+      # 🔄 Restart Nginx
       - name: Restart Nginx
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << 'EOF'
